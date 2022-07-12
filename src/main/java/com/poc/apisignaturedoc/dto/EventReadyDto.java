@@ -1,9 +1,8 @@
 package com.poc.apisignaturedoc.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.poc.apisignaturedoc.models.Document;
 
-public class Event {
+public class EventReadyDto {
     @JsonProperty("id")
     private String id;
     @JsonProperty("specVersion")
@@ -21,15 +20,7 @@ public class Event {
     @JsonProperty("dataContentType")
     private String dataContentType;
     @JsonProperty("data")
-    private Document data;
-
-    public Document getData() {
-        return data;
-    }
-
-    public void setData(Document data) {
-        this.data = data;
-    }
+    private DocumentReadyDto data;
 
     public String getId() {
         return id;
@@ -95,18 +86,11 @@ public class Event {
         this.dataContentType = dataContentType;
     }
 
-    @Override
-    public String toString() {
-        return "Event{" +
-                "id='" + id + '\'' +
-                ", specVersion='" + specVersion + '\'' +
-                ", source='" + source + '\'' +
-                ", type='" + type + '\'' +
-                ", subject='" + subject + '\'' +
-                ", time='" + time + '\'' +
-                ", correlationId='" + correlationId + '\'' +
-                ", dataContentType='" + dataContentType + '\'' +
-                ", data=" + data +
-                '}';
+    public DocumentReadyDto getData() {
+        return data;
+    }
+
+    public void setData(DocumentReadyDto data) {
+        this.data = data;
     }
 }

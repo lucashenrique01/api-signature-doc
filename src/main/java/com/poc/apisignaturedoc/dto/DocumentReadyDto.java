@@ -1,10 +1,11 @@
 package com.poc.apisignaturedoc.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
 
-public class DataCancelCommand {
-    @JsonProperty("idDocument")
+public class DocumentReadyDto {
+
     private String idDocument;
+    private List<String> email;
 
     public String getIdDocument() {
         return idDocument;
@@ -12,5 +13,13 @@ public class DataCancelCommand {
 
     public void setIdDocument(String idDocument) {
         this.idDocument = idDocument;
+    }
+
+    public List<String> getEmail() {
+        return email;
+    }
+
+    public void setEmail(List<String> email) {
+        this.email = email;
     }
 }

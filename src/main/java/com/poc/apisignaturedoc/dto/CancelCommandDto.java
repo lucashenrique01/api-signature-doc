@@ -1,9 +1,8 @@
 package com.poc.apisignaturedoc.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.poc.apisignaturedoc.models.Document;
 
-public class CancelCommand {
+public class CancelCommandDto {
     @JsonProperty("id")
     private String id;
     @JsonProperty("specVersion")
@@ -21,7 +20,7 @@ public class CancelCommand {
     @JsonProperty("dataContentType")
     private String dataContentType;
     @JsonProperty("data")
-    private DataCancelCommand data;
+    private DataCancelCommandDto data;
 
     public String getId() {
         return id;
@@ -87,11 +86,11 @@ public class CancelCommand {
         this.dataContentType = dataContentType;
     }
 
-    public DataCancelCommand getData() {
+    public DataCancelCommandDto getData() {
         return data;
     }
 
-    public void setData(DataCancelCommand data) {
+    public void setData(DataCancelCommandDto data) {
         this.data = data;
     }
 }

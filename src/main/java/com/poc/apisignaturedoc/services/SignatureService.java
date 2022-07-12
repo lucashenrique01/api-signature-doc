@@ -2,7 +2,10 @@ package com.poc.apisignaturedoc.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.poc.apisignaturedoc.converters.Mapper;
-import com.poc.apisignaturedoc.dto.Event;
+import com.poc.apisignaturedoc.converters.ObjectToGson;
+import com.poc.apisignaturedoc.dto.DocumentReadyDto;
+import com.poc.apisignaturedoc.dto.EventDto;
+import com.poc.apisignaturedoc.dto.EventReadyDto;
 import com.poc.apisignaturedoc.models.Document;
 import com.poc.apisignaturedoc.models.Signature;
 import com.poc.apisignaturedoc.repositorys.DocumentRepository;
@@ -12,6 +15,8 @@ import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Component
@@ -19,21 +24,23 @@ public class SignatureService {
     private SignatureRepository signatureRepository;
     private DocumentRepository documentRepository;
     private DocumentService documentService;
+    private KafkaProducer kafkaProducer;
     public SignatureService(SignatureRepository signatureRepository, DocumentRepository documentRepository, @Lazy
-    DocumentService documentService) {
+    DocumentService documentService, @Lazy KafkaProducer kafkaProducer) {
         this.signatureRepository = signatureRepository;
         this.documentRepository = documentRepository;
         this.documentService = documentService;
+        this.kafkaProducer = kafkaProducer;
     }
 
     public void saveSignature(String value) throws JsonProcessingException {
         Mapper objectMapper = new Mapper();
-        Event event = objectMapper.getMapper().readValue(new String(value.getBytes(StandardCharsets.UTF_8)), Event.class);
-        for(int i = 0; i < event.getData().getSignatures_number(); i++){
+        EventDto eventDto = objectMapper.getMapper().readValue(new String(value.getBytes(StandardCharsets.UTF_8)), EventDto.class);
+        for(int i = 0; i < eventDto.getData().getSignatures_number(); i++){
             Signature signature = new Signature();
-            signature.setEmail(event.getData().getSignatures().get(i).getEmail());
-            signature.setDocIdentificacao(event.getData().getSignatures().get(i).getDocIdentificacao());
-            signature.setDocument(event.getData());
+            signature.setEmail(eventDto.getData().getSignatures().get(i).getEmail());
+            signature.setDocIdentificacao(eventDto.getData().getSignatures().get(i).getDocIdentificacao());
+            signature.setDocument(eventDto.getData());
             signature.setSignature(false);
             signatureRepository.save(signature);
             System.out.println("Create signatures");
@@ -59,6 +66,9 @@ public class SignatureService {
                 signature.setSignature(true);
                 signature.setSingature_date(LocalDate.now());
                 signatureRepository.save(signature);
+                if(document.verifySignature()){
+                    eventDocumentReady(document.getIdDocument(), document.getSignatures());
+                }
                 return true;
             }
             return false;
@@ -81,6 +91,32 @@ public class SignatureService {
             System.out.println(ex.getMessage());
         }
         return false;
+    }
+
+    public void eventDocumentReady(String idDocument, List<Signature> signatures){
+        EventReadyDto eventReadyDto = new EventReadyDto();
+        UUID uuid = UUID.randomUUID();
+        String uuidAsString = uuid.toString();
+        eventReadyDto.setId(uuidAsString);
+        LocalDateTime localDate = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+        eventReadyDto.setTime(localDate.format(formatter));
+        eventReadyDto.setType("br.com.example.signature.document.ready");
+        eventReadyDto.setSpecVersion("1.0");
+        eventReadyDto.setSubject("Document ready");
+        eventReadyDto.setSource("/product/domain/subdomain/service");
+        eventReadyDto.setDataContentType("application/json");
+        eventReadyDto.setCorrelationId("");
+        DocumentReadyDto documentReadyDto = new DocumentReadyDto();
+        documentReadyDto.setIdDocument(idDocument);
+        List<String> email = new ArrayList<>();
+        for(Signature signature : signatures){
+            email.add(signature.getEmail());
+        }
+        ObjectToGson<EventReadyDto> objectToGson = new ObjectToGson<>();
+        documentReadyDto.setEmail(email);
+        eventReadyDto.setData(documentReadyDto);
+        kafkaProducer.sendMessage(uuidAsString, objectToGson.eventToJson(eventReadyDto));
     }
 
 

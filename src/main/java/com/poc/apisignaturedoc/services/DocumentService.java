@@ -2,7 +2,7 @@ package com.poc.apisignaturedoc.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.poc.apisignaturedoc.converters.Mapper;
-import com.poc.apisignaturedoc.dto.Event;
+import com.poc.apisignaturedoc.dto.EventDto;
 import com.poc.apisignaturedoc.models.Document;
 import com.poc.apisignaturedoc.repositorys.DocumentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,12 +32,12 @@ public class DocumentService {
 
     public void saveDocument(String value) throws JsonProcessingException {
         Mapper objectMapper = new Mapper();
-        Event event = objectMapper.getMapper().readValue(new String(value.getBytes(StandardCharsets.UTF_8)), Event.class);
-        if(!existDocument(event.getData().getIdDocument())){
+        EventDto eventDto = objectMapper.getMapper().readValue(new String(value.getBytes(StandardCharsets.UTF_8)), EventDto.class);
+        if(!existDocument(eventDto.getData().getIdDocument())){
             Document document = new Document();
-            document.setIdDocument(event.getData().getIdDocument());
-            document.setLimitDate(event.getData().getLimitDate());
-            document.setSignatures_number(event.getData().getSignatures_number());
+            document.setIdDocument(eventDto.getData().getIdDocument());
+            document.setLimitDate(eventDto.getData().getLimitDate());
+            document.setSignatures_number(eventDto.getData().getSignatures_number());
             documentRepository.save(document);
             signatureService.saveSignature(value);
             System.out.println("Create document");

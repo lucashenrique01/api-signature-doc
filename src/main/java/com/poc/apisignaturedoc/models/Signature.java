@@ -23,8 +23,6 @@ public class Signature {
     @JoinColumn(name="fkDocument", referencedColumnName="idDocument")
     private Document document;
 
-
-    // br.com.example.signature.document.ready evento de assinaturas prontas
     public Integer getId() {
         return id;
     }

@@ -21,7 +21,6 @@ public class KafkaService {
     public void getMessages(String topic){
         KafkaProperties kafkaProperties = new KafkaProperties();
 
-        // Add additional required properties for this consumer app
         final Consumer<String, String> consumer = new KafkaConsumer<>(kafkaProperties.getProperties());
         consumer.subscribe(Arrays.asList(topic));
         try {

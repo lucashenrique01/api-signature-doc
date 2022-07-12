@@ -20,7 +20,7 @@ public class Document {
     @JsonProperty("id_document")
     private String idDocument;
     @JsonProperty("limit_date")
-    private String limitDate;
+    private LocalDate limitDate;
 
 
     public List<Signature> getSignatures() {
@@ -47,12 +47,21 @@ public class Document {
         this.idDocument = idDocument;
     }
 
-    public String getLimitDate() {
+    public LocalDate getLimitDate() {
         return limitDate;
     }
 
-    public void setLimitDate(String limitDate) {
+    public void setLimitDate(LocalDate limitDate) {
         this.limitDate = limitDate;
+    }
+
+    public Boolean verifySignature(){
+        for(Signature signature : signatures){
+            if(!signature.getSignature()){
+                return false;
+            }
+        }
+        return true;
     }
 
 }

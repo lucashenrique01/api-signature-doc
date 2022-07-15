@@ -1,0 +1,22 @@
+version: '3.4'
+
+services:  
+
+  db:
+    image: mysql:8.0
+    container_name: mysql_signature   
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: poc_saga_signature
+
+  api-signature-doc:    
+    build: .      
+    depends_on:  
+      - db           
+    container_name: api-signature-doc
+    hostname: api-signature-doc 
+  
+  
+  
+    

@@ -23,11 +23,10 @@ public class DocumentService {
     @Autowired
     private SignatureService signatureService;
 
-    private KafkaProducerService kafkaProducerService;
 
-    public DocumentService (DocumentRepository documentRepository, @Lazy KafkaProducerService kafkaProducerService) {
+
+    public DocumentService (DocumentRepository documentRepository) {
         this.documentRepository = documentRepository;
-        this.kafkaProducerService = kafkaProducerService;
     }
 
     public void saveDocument(String value) throws JsonProcessingException {

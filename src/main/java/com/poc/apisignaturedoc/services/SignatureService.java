@@ -18,19 +18,19 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 @Component
 public class SignatureService {
     private SignatureRepository signatureRepository;
     private DocumentRepository documentRepository;
     private DocumentService documentService;
-    private KafkaProducer kafkaProducer;
+
     public SignatureService(SignatureRepository signatureRepository, DocumentRepository documentRepository, @Lazy
-    DocumentService documentService, @Lazy KafkaProducer kafkaProducer) {
+    DocumentService documentService) {
         this.signatureRepository = signatureRepository;
         this.documentRepository = documentRepository;
         this.documentService = documentService;
-        this.kafkaProducer = kafkaProducer;
     }
 
     public void saveSignature(String value) throws JsonProcessingException {
@@ -57,7 +57,7 @@ public class SignatureService {
         return null;
     }
 
-    public Boolean putSignature(String id_document, String email, String doc){
+    public Boolean putSignature(String id_document, String email, String doc) throws ExecutionException, InterruptedException {
         Document document = documentRepository.findByIdDocument(id_document);
         Signature signature = signatureRepository.findByDocumentAndEmailAndDocIdentificacao(document, email, doc);
         if(!Objects.isNull(document) && !Objects.isNull(signature)){
@@ -93,7 +93,7 @@ public class SignatureService {
         return false;
     }
 
-    public void eventDocumentReady(String idDocument, List<Signature> signatures){
+    public void eventDocumentReady(String idDocument, List<Signature> signatures) throws ExecutionException, InterruptedException {
         EventReadyDto eventReadyDto = new EventReadyDto();
         UUID uuid = UUID.randomUUID();
         String uuidAsString = uuid.toString();
@@ -116,7 +116,8 @@ public class SignatureService {
         ObjectToGson<EventReadyDto> objectToGson = new ObjectToGson<>();
         documentReadyDto.setEmail(email);
         eventReadyDto.setData(documentReadyDto);
-        kafkaProducer.sendMessage(uuidAsString, objectToGson.eventToJson(eventReadyDto));
+        KafkaDispatcher kafkaDispatcher = new KafkaDispatcher();
+        kafkaDispatcher.send(eventReadyDto);
     }
 
 

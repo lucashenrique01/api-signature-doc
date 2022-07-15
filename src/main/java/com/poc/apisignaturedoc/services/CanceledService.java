@@ -19,18 +19,18 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 @Service
 public class CanceledService {
     private DocumentService documentService;
     private SignatureService signatureService;
-    private KafkaProducerService kafkaProducerService;
 
-    public CanceledService(SignatureService signatureService, DocumentService documentService,
-                           KafkaProducerService kafkaProducerService){
+
+    public CanceledService(SignatureService signatureService, DocumentService documentService
+                           ){
         this.signatureService = signatureService;
         this.documentService = documentService;
-        this.kafkaProducerService = kafkaProducerService;
     }
 
 
@@ -54,12 +54,16 @@ public class CanceledService {
             }
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         } finally {
             consumer.close();
         }
     }
 
-    private void deleteSignaturesAndSendEvent(String idDocument){
+    private void deleteSignaturesAndSendEvent(String idDocument) throws ExecutionException, InterruptedException {
         signatureService.deleteSignatures(idDocument);
         documentService.deleteDocument(idDocument);
         CanceledSignatureEventDto canceledSignatureEventDto = new CanceledSignatureEventDto();
@@ -75,7 +79,7 @@ public class CanceledService {
         DataCancelCommandDto dataCancelCommandDto = new DataCancelCommandDto();
         dataCancelCommandDto.setIdDocument(idDocument);
         canceledSignatureEventDto.setData(dataCancelCommandDto);
-        ObjectToGson<CanceledSignatureEventDto> objectToGson = new ObjectToGson<>();
-        kafkaProducerService.sendMessage(uuidAsString, objectToGson.eventToJson(canceledSignatureEventDto));
+        KafkaDispatcher kafkaDispatcher = new KafkaDispatcher();
+        kafkaDispatcher.send(canceledSignatureEventDto);
     }
 }

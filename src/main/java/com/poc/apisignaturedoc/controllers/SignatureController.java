@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
 
 
 @RestController
@@ -28,7 +29,7 @@ public class SignatureController {
     @PutMapping("/{id_document}/{email}/{doc}")
     public ResponseEntity putSignature(@PathVariable String id_document,
                                         @PathVariable String email,
-                                        @PathVariable String doc){
+                                        @PathVariable String doc) throws ExecutionException, InterruptedException {
 
         if(signatureService.putSignature(id_document, email, doc)){
             return ResponseEntity.status(200).build();

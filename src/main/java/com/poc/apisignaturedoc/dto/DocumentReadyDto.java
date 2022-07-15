@@ -5,7 +5,7 @@ import java.util.List;
 public class DocumentReadyDto {
 
     private String idDocument;
-    private List<String> email;
+    private List<String> emails;
 
     public String getIdDocument() {
         return idDocument;
@@ -16,10 +16,10 @@ public class DocumentReadyDto {
     }
 
     public List<String> getEmail() {
-        return email;
+        return emails;
     }
 
     public void setEmail(List<String> email) {
-        this.email = email;
+        this.emails = email;
     }
 }
